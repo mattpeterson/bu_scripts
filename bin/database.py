@@ -44,7 +44,7 @@ as g WHERE g.org_code LIKE %s", (org_code,))
         
         return orthogroups
 
-    def get_chip_interactions(self, operons = True, min_score = 12.0, 
+    def get_chip_interactions(self, operons = True, min_score = 4.0, 
                              lsr2_threshold = 2.0):
         """Gets the ChIP interactions from the database.  This uses one of
         the two views Anna set up, either chip_interactions_bd_operons if
@@ -56,19 +56,46 @@ as g WHERE g.org_code LIKE %s", (org_code,))
         # Creating a new array, as we don't need to store everything
         results = []
         
-        cursor = self.cursor(MySQLdb.cursors.DictCursor)
-        
-        if operons:
-            db = "chip_interactions_bd_operons"
-        else:
-            db = "chip_interactions_db"
-        
-        cursor.execute("SELECT * from %s WHERE `height/median` > %s \
-AND (lsr2_ratio = NULL OR lsr2_ratio > %s)" % (db, min_score, lsr2_threshold))
-        
+        cursor = self.cursor()
+              
+        cursor.execute("SELECT from_gene_locus, to_gene_locus from chip_interactions_simple")
         for r in cursor.fetchall():
-            results.append((r["from_gene_locus"], r["gene2"]))
+            results.append((r[0], r[1]))
         
         return results
+    
+    
+    def get_clr_scores(self, gene = None, ignore_zeros = False):
+        """Gets the CLR scores for all pairs of genes.  Returns a dictionary,
+        keyed on tuples.  To save space, don't return anything w/ 0.0
+        """
+        results = {}
         
+        cursor = self.cursor()
         
+        if ignore_zeros:
+            cursor.execute("SELECT * from oe_clr WHERE z_score > 0 \
+AND from_gene_locus = %s", (gene,))
+        else:
+            cursor.execute("SELECT * from oe_clr WHERE from_gene_locus = %s",
+                           (gene,))
+        
+        for r in cursor.fetchall():
+            results[(r[0], r[1])] = r[2]
+            
+        return results
+    
+    def get_lit_interactions(self, gene):
+        """Retrieve literature curated interactions from the database"""
+        interactions = set()
+        
+        cursor = self.cursor()
+        
+        cursor.execute("SELECT from_gene_locus, to_gene_locus FROM \
+interactions WHERE type = \"Curation\" AND from_gene_locus = %s", (gene,))
+        
+        # Store everything as a tuple.  Easier that way.
+        for r in cursor.fetchall():
+            interactions.add( (r[0], r[1]) )
+        
+        return interactions
