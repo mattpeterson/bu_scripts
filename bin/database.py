@@ -61,8 +61,8 @@ as g WHERE g.org_code LIKE %s", (org_code,))
         # Using the chip_interactions_simple view.
         #cursor.execute("SELECT from_gene_locus, to_gene_locus from \
 #chip_interactions_simple")
-        cursor.execute("SELECT from_gene_locus, gene2 from \
-chip_interactions_bd_operons WHERE `height/median` > 5 AND (lsr2_ratio IS \
+        cursor.execute("SELECT from_gene_locus, to_gene_locus from \
+chip_interactions_bd WHERE `height/median` > 5 AND (lsr2_ratio IS \
 NULL or lsr2_ratio > 2)")
         for r in cursor.fetchall():
             results.append((r[0], r[1]))

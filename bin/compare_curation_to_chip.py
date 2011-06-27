@@ -24,8 +24,19 @@ def read_balazi_network(file_handle):
     
     for line in file_handle:
         tokens = line.rstrip("\r\n").split("\t")
-        if "1" in tokens[4] or "2" in tokens[4]:
+        if "1A" in tokens[4] or "2A" in tokens[4]:
             interactions.add( (tokens[1], tokens[3]))
+    
+    return interactions
+
+def read_curated_network(file_handle):
+    interactions = set()
+    
+    for line in file_handle:
+        tokens = line.rstrip("\r\n").split("\t")
+        print tokens
+        if tokens[2] == "1":
+            interactions.add( (tokens[0], tokens[1]))
     
     return interactions
 
@@ -35,7 +46,7 @@ def main():
     """
     connection = DatabaseConnection()
     
-    balazi_interactions = read_balazi_network(open(sys.argv[1]))
+    balazi_interactions = read_curated_network(open(sys.argv[1]))
 
     chip_interactions = connection.get_chip_interactions()
     from_genes = set([ i[0] for i in chip_interactions ])
