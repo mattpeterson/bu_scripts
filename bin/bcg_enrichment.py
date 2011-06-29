@@ -13,7 +13,7 @@ def main():
     # Now, the TB orthogroups
     orthogroup_to_mtb = db_connection.get_orthogroups("h37r", "orthogroups")
     
-    results_file = sys.argv[1]keyeda    
+    results_file = sys.argv[1]    
 
 if __name__ == "__main__":
     main()

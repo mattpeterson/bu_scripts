@@ -13,11 +13,14 @@ def get_matching_pct(curated_interactions, chip_interactions):
     total_curated = len(curated_interactions)
     
     hits = 0
+    misses = set()
     for i in curated_interactions:
         if i in chip_interactions:
             hits += 1
+        else:
+            misses.add(i[1])
     
-    return float(hits)
+    return hits, misses
 
 def read_balazi_network(file_handle):
     interactions = set()
@@ -30,11 +33,14 @@ def read_balazi_network(file_handle):
     return interactions
 
 def read_curated_network(file_handle):
+    """
+    Read in the curated network.
+    """
     interactions = set()
     
     for line in file_handle:
         tokens = line.rstrip("\r\n").split("\t")
-        print tokens
+        
         if tokens[2] == "1":
             interactions.add( (tokens[0], tokens[1]))
     
@@ -59,10 +65,11 @@ def main():
             print("%s: None Curated" % g)
             continue
             
-        matches = get_matching_pct(curated_interactions, chip_interactions)
+        matches, misses = get_matching_pct(curated_interactions, chip_interactions)
         
         print("%s: %d/%d (%f)" % (g, matches, len(curated_interactions),
                                               float(matches)/len(curated_interactions)))
+        print(", ".join(misses))
         
 
 if __name__ == "__main__":
